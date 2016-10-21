@@ -10,7 +10,7 @@ Download the two NBM files marked as "Latest NBM Release"
 
 Go to Plugins/Downloaded/Add Plugins to install.
 
-See the WIKI for help using the plugin.
+See the <a href='https://github.com/GIngleby16/LogMXNetBeans/wiki'>WIKI</a> for help using the plugin.
 
 ## What is Log MX?
 
