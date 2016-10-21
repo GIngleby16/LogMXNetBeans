@@ -5,7 +5,7 @@ LogMX GotoSource NetBeans Plugin
 
 Download the two NBM files marked as "Latest NBM Release"
 
-* <a href='LogMXNetBeans/net-ingleby-logmx-plugin.nbm'>net-ingleby-logmx-plugin.nbm</a>
+* <a href='https://github.com/GIngleby16/LogMXNetBeans/raw/master/net-ingleby-logmx-plugin.nbm'>net-ingleby-logmx-plugin.nbm</a>
 * <a href='LogMXNetBeans/net-ingleby-logmx.nbm'>net-ingleby-logmx.nbm</a>
 
 Go to Plugins/Downloaded/Add Plugins to install.
