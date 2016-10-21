@@ -25,15 +25,17 @@ package net.ingleby.logmx.plugin.options;
 
 import com.google.common.net.InetAddresses;
 import com.google.common.net.InternetDomainName;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.Color;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
@@ -57,6 +59,12 @@ final public class LogMXGotoSourcePanel extends javax.swing.JPanel {
         this.controller = controller;
         initComponents();
 
+        /*
+        * Correct TextPane Background Color - not sure why I can't set this directly but it gets *changed* when I use the color returned from UIManager!
+         */
+        Color c = UIManager.getColor("OptionPane.background");
+        jTextPane2.setBackground(new Color(c.getRed(), c.getGreen(), c.getBlue()));
+
         /**
          * Configure Text Pane
          */
@@ -71,6 +79,23 @@ final public class LogMXGotoSourcePanel extends javax.swing.JPanel {
         } catch (BadLocationException | IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+
+        /**
+         * Hyper-link functionality
+         */
+        jTextPane2.addHyperlinkListener(new HyperlinkListener() {
+            @Override
+            public void hyperlinkUpdate(HyperlinkEvent e) {
+                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                    try {
+                        HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("http://www.logmx.com/ide-plugins#netbeans"));
+                    } catch (MalformedURLException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+
+            }
+        });
 
         /**
          * Custom validators to check the hostname/ip and port
@@ -113,20 +138,6 @@ final public class LogMXGotoSourcePanel extends javax.swing.JPanel {
         group = validationPanel.getValidationGroup();
         group.add(addressTextField, addressValidator);
         group.add(portTextField, portValidator);
-
-        /**
-         * Imitate hyper-link functionality
-         */
-//        urlLabel.addMouseListener(new MouseAdapter() {
-//            @Override
-//            public void mouseClicked(MouseEvent e) {
-//                try {
-//                    HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("http://www.logmx.com/ide-plugins#netbeans"));
-//                } catch (MalformedURLException ex) {
-//                    Exceptions.printStackTrace(ex);
-//                }
-//            }
-//        });
 
         /**
          * Document Listener that triggers a controller change
@@ -201,10 +212,11 @@ final public class LogMXGotoSourcePanel extends javax.swing.JPanel {
 
         validationPanel.setBorder(null);
 
+        jScrollPane2.setBackground(new java.awt.Color(153, 255, 255));
         jScrollPane2.setBorder(null);
         jScrollPane2.setPreferredSize(new java.awt.Dimension(19, 20));
 
-        jTextPane2.setBackground(getBackground());
+        jTextPane2.setBackground(UIManager.getColor("OptionPane.background"));
         jTextPane2.setBorder(null);
         jTextPane2.setContentType("text/html\n"); // NOI18N
         jTextPane2.setText(org.openide.util.NbBundle.getMessage(LogMXGotoSourcePanel.class, "LogMXGotoSourcePanel.jTextPane2.text")); // NOI18N
@@ -305,7 +317,6 @@ final public class LogMXGotoSourcePanel extends javax.swing.JPanel {
             LogMXGotoSourcePanel.this.controller.resetchanged();
         }
 
-        
         /**
          * Validate all form fields
          */
