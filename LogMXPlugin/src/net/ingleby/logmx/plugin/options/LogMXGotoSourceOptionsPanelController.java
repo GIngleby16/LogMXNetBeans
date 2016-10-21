@@ -98,7 +98,18 @@ public final class LogMXGotoSourceOptionsPanelController extends OptionsPanelCon
             changed = true;
             pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
         }
-        pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
+        //pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
 
+    void resetchanged() {
+        if (changed) {
+            changed = false;
+            pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, true, false);
+        }
+        //pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
+    }
+    
+    void performValidation() {
+        pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
+    }
 }

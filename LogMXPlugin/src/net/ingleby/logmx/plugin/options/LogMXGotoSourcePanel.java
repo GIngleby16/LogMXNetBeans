@@ -20,19 +20,23 @@
 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
-*/
+ */
 package net.ingleby.logmx.plugin.options;
 
 import com.google.common.net.InetAddresses;
 import com.google.common.net.InternetDomainName;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLEditorKit;
 import net.ingleby.logmx.plugin.Installer;
 import org.netbeans.validation.api.Problem;
 import org.netbeans.validation.api.Problems;
@@ -45,12 +49,28 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
 final public class LogMXGotoSourcePanel extends javax.swing.JPanel {
+
     private final LogMXGotoSourceOptionsPanelController controller;
     private final ValidationGroup group;
 
     LogMXGotoSourcePanel(LogMXGotoSourceOptionsPanelController controller) {
         this.controller = controller;
         initComponents();
+
+        /**
+         * Configure Text Pane
+         */
+        try {
+            jTextPane2.setContentType("text/html");
+            jTextPane2.setEditable(false);
+            jTextPane2.setFocusable(false);
+            HTMLDocument doc = (HTMLDocument) jTextPane2.getDocument();
+            HTMLEditorKit editorKit = (HTMLEditorKit) jTextPane2.getEditorKit();
+            String text = "<html>This plugin “LogMX GotoSource” allows LogMX (log analyzer tool) to communicate with NetBeans in order to open Java source files directly from LogMX: when LogMX detects a Java stack trace in a log entry, it creates a link for each stack trace line so that when this link is clicked, running instance of NetBeans opens the corresponding stack trace Java element at the right line.  Also simply hovering this link with the mouse will show the source directly from LogMX.<br><br>For more information see:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=‘http://www.logmx.com/ide-plugins#netbeans’>http://www.logmx.com/ide-plugins#netbeans</a></html>";
+            editorKit.insertHTML(doc, doc.getLength(), text, 0, 0, null);
+        } catch (BadLocationException | IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
 
         /**
          * Custom validators to check the hostname/ip and port
@@ -84,7 +104,7 @@ final public class LogMXGotoSourcePanel extends javax.swing.JPanel {
                 return String.class;
             }
         };
-        
+
         /**
          * Configure validation group
          */
@@ -94,20 +114,19 @@ final public class LogMXGotoSourcePanel extends javax.swing.JPanel {
         group.add(addressTextField, addressValidator);
         group.add(portTextField, portValidator);
 
-
         /**
          * Imitate hyper-link functionality
          */
-        urlLabel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                try {
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("http://www.logmx.com/ide-plugins#netbeans"));
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        });
+//        urlLabel.addMouseListener(new MouseAdapter() {
+//            @Override
+//            public void mouseClicked(MouseEvent e) {
+//                try {
+//                    HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("http://www.logmx.com/ide-plugins#netbeans"));
+//                } catch (MalformedURLException ex) {
+//                    Exceptions.printStackTrace(ex);
+//                }
+//            }
+//        });
 
         /**
          * Document Listener that triggers a controller change
@@ -115,30 +134,34 @@ final public class LogMXGotoSourcePanel extends javax.swing.JPanel {
         DocumentListener documentChangedListener = new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
-                LogMXGotoSourcePanel.this.controller.changed();
+                //LogMXGotoSourcePanel.this.controller.changed();
+                LogMXGotoSourcePanel.this.controller.performValidation();
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-                LogMXGotoSourcePanel.this.controller.changed();
+//                LogMXGotoSourcePanel.this.controller.changed();
+                LogMXGotoSourcePanel.this.controller.performValidation();
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                LogMXGotoSourcePanel.this.controller.changed();
+//                LogMXGotoSourcePanel.this.controller.changed();
+                LogMXGotoSourcePanel.this.controller.performValidation();
             }
         };
         // Bind to our text fields
         addressTextField.getDocument().addDocumentListener(documentChangedListener);
         portTextField.getDocument().addDocumentListener(documentChangedListener);
-        
+
         /**
          * CheckBox Change Listener that triggers a controller change
          */
         pluginEnabledCheckBox.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                LogMXGotoSourcePanel.this.controller.changed();
+//                LogMXGotoSourcePanel.this.controller.changed();
+                LogMXGotoSourcePanel.this.controller.performValidation();
             }
         });
     }
@@ -157,11 +180,9 @@ final public class LogMXGotoSourcePanel extends javax.swing.JPanel {
         addressTextField = new javax.swing.JTextField();
         portTextField = new javax.swing.JTextField();
         pluginEnabledCheckBox = new javax.swing.JCheckBox();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTextPane1 = new javax.swing.JTextPane();
-        jLabel2 = new javax.swing.JLabel();
-        urlLabel = new javax.swing.JLabel();
         validationPanel = new org.netbeans.validation.api.ui.swing.ValidationPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTextPane2 = new javax.swing.JTextPane();
 
         jLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/net/ingleby/logmx/plugin/options/logmx_logo.png"))); // NOI18N
@@ -178,45 +199,37 @@ final public class LogMXGotoSourcePanel extends javax.swing.JPanel {
         pluginEnabledCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(pluginEnabledCheckBox, org.openide.util.NbBundle.getMessage(LogMXGotoSourcePanel.class, "LogMXGotoSourcePanel.pluginEnabledCheckBox.text")); // NOI18N
 
-        jScrollPane1.setBorder(null);
+        validationPanel.setBorder(null);
 
-        jTextPane1.setBackground(java.awt.SystemColor.window);
-        jTextPane1.setBorder(null);
-        jTextPane1.setText(org.openide.util.NbBundle.getMessage(LogMXGotoSourcePanel.class, "LogMXGotoSourcePanel.jTextPane1.text")); // NOI18N
-        jScrollPane1.setViewportView(jTextPane1);
+        jScrollPane2.setBorder(null);
+        jScrollPane2.setPreferredSize(new java.awt.Dimension(19, 20));
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(LogMXGotoSourcePanel.class, "LogMXGotoSourcePanel.jLabel2.text")); // NOI18N
-
-        urlLabel.setForeground(java.awt.SystemColor.controlHighlight);
-        org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(LogMXGotoSourcePanel.class, "LogMXGotoSourcePanel.urlLabel.text")); // NOI18N
-        urlLabel.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jTextPane2.setBackground(getBackground());
+        jTextPane2.setBorder(null);
+        jTextPane2.setContentType("text/html\n"); // NOI18N
+        jTextPane2.setText(org.openide.util.NbBundle.getMessage(LogMXGotoSourcePanel.class, "LogMXGotoSourcePanel.jTextPane2.text")); // NOI18N
+        jTextPane2.setPreferredSize(new java.awt.Dimension(10, 10));
+        jScrollPane2.setViewportView(jTextPane2);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jLabel2)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel3)
-                            .addComponent(jLabel4))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(addressTextField)
-                            .addComponent(portTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 166, Short.MAX_VALUE)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
                 .addComponent(pluginEnabledCheckBox))
             .addGroup(layout.createSequentialGroup()
-                .addGap(47, 47, 47)
-                .addComponent(urlLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel3)
+                    .addComponent(jLabel4))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(portTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE)
+                    .addComponent(addressTextField))
                 .addGap(0, 0, Short.MAX_VALUE))
             .addComponent(validationPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -233,15 +246,10 @@ final public class LogMXGotoSourcePanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
                     .addComponent(portTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel2)
-                .addGap(3, 3, 3)
-                .addComponent(urlLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 26, Short.MAX_VALUE)
-                .addComponent(validationPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0))
+                .addGap(18, 18, 18)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 52, Short.MAX_VALUE)
+                .addGap(8, 8, 8)
+                .addComponent(validationPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -259,7 +267,29 @@ final public class LogMXGotoSourcePanel extends javax.swing.JPanel {
     }
 
     void store() {
-        // record old preference values..
+        // Save Preferences
+        NbPreferences.forModule(LogMXGotoSourcePanel.class).putBoolean("enabled", pluginEnabledCheckBox.isSelected());
+        NbPreferences.forModule(LogMXGotoSourcePanel.class).put("listenAddress", addressTextField.getText());
+        try {
+            NbPreferences.forModule(LogMXGotoSourcePanel.class).putInt("listenPort", Integer.parseInt(portTextField.getText()));
+        } catch (NumberFormatException e) {
+            //Not an integer
+        }
+
+        /**
+         * Stop or start goto-source socket listener as needed
+         */
+        if (!pluginEnabledCheckBox.isSelected()) {
+            Installer.stopGotoSource();
+        } else {
+            Installer.startGotoSource();
+        }
+    }
+
+    boolean valid() {
+        /**
+         * Determine if we have changed state...
+         */
         String oldAddress = NbPreferences.forModule(LogMXGotoSourcePanel.class).get("listenAddress", "127.0.0.1");
         String oldPort = NbPreferences.forModule(LogMXGotoSourcePanel.class).get("listenPort", "7789");
         boolean oldEnabled = NbPreferences.forModule(LogMXGotoSourcePanel.class).getBoolean("enabled", true);
@@ -269,29 +299,13 @@ final public class LogMXGotoSourcePanel extends javax.swing.JPanel {
         String newPort = portTextField.getText();
         boolean newEnabled = pluginEnabledCheckBox.isSelected();
 
-        // We only need to store preferences if something has actually changed!
         if (!oldAddress.equals(newAddress) || !oldPort.equals(newPort) || oldEnabled != newEnabled) {
-            // Save Preferences
-            NbPreferences.forModule(LogMXGotoSourcePanel.class).putBoolean("enabled", newEnabled);
-            NbPreferences.forModule(LogMXGotoSourcePanel.class).put("listenAddress", newAddress);
-            try {
-                NbPreferences.forModule(LogMXGotoSourcePanel.class).putInt("listenPort", Integer.parseInt(newPort));
-            } catch (NumberFormatException e) {
-                //Not an integer
-            }
-            
-            /**
-             * Stop or start goto-source socket listener as needed
-             */
-            if (!pluginEnabledCheckBox.isSelected()) {
-                Installer.stopGotoSource();
-            } else {
-                Installer.startGotoSource();
-            }
+            LogMXGotoSourcePanel.this.controller.changed();
+        } else {
+            LogMXGotoSourcePanel.this.controller.resetchanged();
         }
-    }
 
-    boolean valid() {
+        
         /**
          * Validate all form fields
          */
@@ -302,14 +316,12 @@ final public class LogMXGotoSourcePanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField addressTextField;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextPane jTextPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTextPane jTextPane2;
     private javax.swing.JCheckBox pluginEnabledCheckBox;
     private javax.swing.JTextField portTextField;
-    private javax.swing.JLabel urlLabel;
     private org.netbeans.validation.api.ui.swing.ValidationPanel validationPanel;
     // End of variables declaration//GEN-END:variables
 
