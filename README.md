@@ -1,6 +1,17 @@
 # LogMXNetBeans
 LogMX GotoSource NetBeans Plugin
 
+## How to Install Plugin in NetBeans
+
+Download the two NBM files marked as "Latest NBM Release"
+
+* net-ingleby-logmx-plugin.nbm
+* net-ingleby-logmx.nbm
+
+Go to Plugins/Downloaded/Add Plugins to install.
+
+See the WIKI for help using the plugin.
+
 ## What is Log MX?
 
 LogMX is an intuitive and cross-platform tool, for developers and administrators analyzing log files. 
