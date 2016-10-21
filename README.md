@@ -1,7 +1,7 @@
 # LogMXNetBeans
 LogMX GotoSource NetBeans Plugin
 
-## How to Install Plugin in NetBeans
+### How to Install Plugin in NetBeans
 
 Download the two NBM files marked as "Latest NBM Release"
 
