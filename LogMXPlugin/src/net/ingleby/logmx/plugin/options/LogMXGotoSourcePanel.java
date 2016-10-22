@@ -23,12 +23,11 @@
  */
 package net.ingleby.logmx.plugin.options;
 
-import com.google.common.net.InetAddresses;
-import com.google.common.net.InternetDomainName;
 import java.awt.Color;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.regex.Pattern;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -49,8 +48,13 @@ import org.netbeans.validation.api.ui.swing.SwingValidationGroup;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
+import sun.net.util.IPAddressUtil;
+
+// IPAddressUtil is an internal API - but google guava was using it to check hostname/ip formats.  
+// Plugin is considerably smaller without the guava dependency
 
 final public class LogMXGotoSourcePanel extends javax.swing.JPanel {
+    private static Pattern HOSTNAME_PATTERN = Pattern.compile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$");
 
     private final LogMXGotoSourceOptionsPanelController controller;
     private final ValidationGroup group;
@@ -103,7 +107,7 @@ final public class LogMXGotoSourcePanel extends javax.swing.JPanel {
         Validator<String> addressValidator = new Validator<String>() {
             @Override
             public void validate(Problems prblms, String fieldName, String hostname) {
-                boolean result = InternetDomainName.isValid(hostname) || InetAddresses.isInetAddress(hostname);
+                boolean result = isValidHostname(hostname) || isValidIP(hostname);
                 if (!result) {
                     prblms.add(new Problem(fieldName + " contains an invalid hostname or IP address", Severity.FATAL));
                 }
@@ -322,6 +326,44 @@ final public class LogMXGotoSourcePanel extends javax.swing.JPanel {
          */
         Problem problem = group.performValidation();
         return !(problem != null && problem.isFatal());
+    }
+
+    /**
+     * Hostname Validation
+     * 
+     * @param hostname
+     * @return 
+     */
+    private static boolean isValidHostname(String hostname) {        
+        if(hostname.length() > 253) 
+            return false;
+        String[] parts = hostname.split("\\.");
+        for(String p : parts) {
+            if(p.length() > 63)
+                return false;
+            if(!HOSTNAME_PATTERN.matcher(p).find())
+                return false;
+        }
+
+        if(Character.isDigit(parts[parts.length-1].charAt(0)))
+            return false;
+        return true;
+    }
+    
+    /**
+     * IP Address Validation
+     * 
+     * @param hostname
+     * @return 
+     */
+    
+    private static boolean isValidIP(String hostname) {
+        byte[] addr = IPAddressUtil.textToNumericFormatV4(hostname);
+        if(addr == null) {
+            // try V6
+            addr = IPAddressUtil.textToNumericFormatV6(hostname);
+        }
+        return addr != null;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
