@@ -3,5 +3,5 @@ AutoUpdate-Show-In-Client: true
 OpenIDE-Module: net.ingleby.logmx.plugin
 OpenIDE-Module-Install: net/ingleby/logmx/plugin/Installer.class
 OpenIDE-Module-Localizing-Bundle: net/ingleby/logmx/plugin/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.1
+OpenIDE-Module-Specification-Version: 1.2
 
