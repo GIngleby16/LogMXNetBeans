@@ -78,7 +78,7 @@ final public class LogMXGotoSourcePanel extends javax.swing.JPanel {
             jTextPane2.setFocusable(false);
             HTMLDocument doc = (HTMLDocument) jTextPane2.getDocument();
             HTMLEditorKit editorKit = (HTMLEditorKit) jTextPane2.getEditorKit();
-            String text = "<html>This plugin “LogMX GotoSource” allows LogMX (log analyzer tool) to communicate with NetBeans in order to open Java source files directly from LogMX: when LogMX detects a Java stack trace in a log entry, it creates a link for each stack trace line so that when this link is clicked, running instance of NetBeans opens the corresponding stack trace Java element at the right line.  Also simply hovering this link with the mouse will show the source directly from LogMX.<br><br>For more information see:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=‘http://www.logmx.com/ide-plugins#netbeans’>http://www.logmx.com/ide-plugins#netbeans</a></html>";
+            String text = "<html>This plugin “LogMX GotoSource” allows LogMX (log analyzer tool) to communicate with NetBeans in order to open Java source files directly from LogMX: when LogMX detects a Java stack trace in a log entry, it creates a link for each stack trace line so that when this link is clicked, running instance of NetBeans opens the corresponding stack trace Java element at the right line.  Also simply hovering this link with the mouse will show the source directly from LogMX.<br><br>For more information see:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"http://www.logmx.com/ide-plugins#netbeans\">http://www.logmx.com/ide-plugins#netbeans</a><br><br><br>For help configuring LogMX see:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"https://github.com/GIngleby16/LogMXNetBeans/wiki\">https://github.com/GIngleby16/LogMXNetBeans/wiki</a></html>";
             editorKit.insertHTML(doc, doc.getLength(), text, 0, 0, null);
         } catch (BadLocationException | IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -91,11 +91,7 @@ final public class LogMXGotoSourcePanel extends javax.swing.JPanel {
             @Override
             public void hyperlinkUpdate(HyperlinkEvent e) {
                 if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                    try {
-                        HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("http://www.logmx.com/ide-plugins#netbeans"));
-                    } catch (MalformedURLException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(e.getURL());
                 }
 
             }
